@@ -1,0 +1,24 @@
+# http 服务配置
+http:
+  listen_ip: 0.0.0.0
+  listemn_port: 80
+  rootpath: /usr/local/pxeserver/netboot
+
+# tftp_files 服务配置
+tftp:
+  tftp_root: /usr/local/pxeserver/netboot
+  listen_ip: 0.0.0.0
+  listen_port: 69
+
+# dhcp 服务配置
+dhcp:
+  listen_ip: 192.168.1.21
+  listen_port: 67
+  start_ip: 192.168.1.201
+  lease_range: 10
+  netmask: 255.255.255.0
+  router: 192.168.1.1
+  dns_server: 114.114.114.114
+  tftp_server: 192.168.1.21
+  pxe_file: http://192.168.1.21/menu.ipxe
+

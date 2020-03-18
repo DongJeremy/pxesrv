@@ -1,0 +1,13 @@
+[Unit]
+Description=pxesrv
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/pxeserver/pxesrv  -c /usr/local/pxeserver/pxe.yml
+ExecStop=/bin/kill -15 $MAINPID
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

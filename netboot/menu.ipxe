@@ -1,0 +1,91 @@
+#!ipxe
+   set menu-timeout 30000
+   set menu-default CentOS7
+   set xieyi:string http
+   isset ${ip} || dhcp
+   # isset ${next-server} || set next-server 192.168.1.22
+:start
+
+  menu iPXE Boot Menu --${ip}
+  item --gap --             ------------------------------- Windows -----------------------------
+  item win7pe               Boot Win7 PE
+  item --gap --             -------------------------------- Linux ------------------------------
+  item CentOS6              Boot CentOS 6 AutoInstall
+  item CentOS7              Boot CentOS 7 AutoInstall
+  item CentOS8              Boot CentOS 8 AutoInstall
+  item RHEL6                RedHat Enterprise Linux 6 AutoInstall
+  item RHEL7                RedHat Enterprise Linux 7 AutoInstall
+  item RHEL8                RedHat Enterprise Linux 8 AutoInstall
+  item Ubuntu1804           Ubuntu Linux 18.04.3 AutoInstall
+  item Debian10             Debian 10.0.0 AutoInstall
+  item --gap --             -------------------------------- TOOL --------------------------------
+  item maxdos               Maxdos
+  item diskgen              Diskgenius
+  item atih64               Atih64
+  item --gap --             ---------------------------- Advanced options ------------------------
+  item reboot               Reboot computer
+  item --key x exit         Exit iPXE and continue BIOS boot                     -- x
+  choose --timeout ${menu-timeout} --default ${menu-default} selected
+  goto ${selected}
+
+:reboot
+  reboot
+
+:exit
+  exit
+
+:CentOS6
+  kernel ${xieyi}://${next-server}/centos/6/isolinux/vmlinuz ks=${xieyi}://${next-server}/linux/ks/centos6.ks
+  initrd ${xieyi}://${next-server}/centos/6/isolinux/initrd.img
+  boot || goto retry
+
+:CentOS7
+  kernel ${xieyi}://${next-server}/centos/7/isolinux/vmlinuz ramdisk_size=300000 ks=${xieyi}://${next-server}/linux/ks/centos7.ks text
+  initrd ${xieyi}://${next-server}/centos/7/isolinux/initrd.img
+  boot || goto retry
+  
+:CentOS8
+  kernel ${xieyi}://${next-server}/centos/8/isolinux/vmlinuz inst.repo=${xieyi}://${next-server}/centos/8 inst.ks=${xieyi}://${next-server}/linux/ks/centos8.ks text
+  initrd ${xieyi}://${next-server}/centos/8/isolinux/initrd.img
+  boot || goto retry
+
+:RHEL6
+  kernel ${xieyi}://${next-server}/rhel/6/isolinux/vmlinuz ks=${xieyi}://${next-server}/linux/ks/rhel6.ks
+  initrd ${xieyi}://${next-server}/rhel/6/isolinux/initrd.img
+  boot || goto retry
+
+:RHEL7
+  kernel ${xieyi}://${next-server}/rhel/7/isolinux/vmlinuz ramdisk_size=300000 ks=${xieyi}://${next-server}/linux/ks/rhel7.ks text
+  initrd ${xieyi}://${next-server}/rhel/7/isolinux/initrd.img
+  boot || goto retry
+  
+:RHEL8
+  kernel ${xieyi}://${next-server}/rhel/8/isolinux/vmlinuz inst.repo=${xieyi}://${next-server}/rhel/8 inst.ks=${xieyi}://${next-server}/linux/ks/rhel8.ks text
+  initrd ${xieyi}://${next-server}/rhel/8/isolinux/initrd.img
+  boot || goto retry
+
+:Ubuntu1804
+  kernel ${xieyi}://${next-server}/ubuntu/install/netboot/ubuntu-installer/amd64/linux auto console-setup/ask_detect=false console-setup/layoutcode=us console-setup/modelcode=pc105 debconf/frontend=noninteractive debian-installer=en_US fb=false kbd-chooser/method=us keyboard-configuration/layout=USA keyboard-configuration/variant=USA locale=en_US netcfg/get_hostname=ubuntu-1804 netcfg/get_domain=sino.com noapic preseed/url=${xieyi}://${next-server}/linux/preseed/ubuntu-server.seed quiet ---
+  initrd ${xieyi}://${next-server}/ubuntu/install/netboot/ubuntu-installer/amd64/initrd.gz  
+  boot || goto retry
+  
+:Debian10
+  kernel ${xieyi}://${next-server}/debian/install.amd/netboot/debian-installer/amd64/linux auto console-setup/ask_detect=false console-setup/layoutcode=us console-keymaps-at/keymap=us debconf/frontend=noninteractive debian-installer=en_US fb=false kbd-chooser/method=us keyboard-configuration/xkb-keymap=us locale=en_US.UTF-8 netcfg/get_hostname=ubuntu-1804 netcfg/get_domain=sino.com noapic preseed/url=${xieyi}://${next-server}/linux/preseed/debian.seed quiet ---
+  initrd ${xieyi}://${next-server}/debian/install.amd/netboot/debian-installer/amd64/initrd.gz
+  boot || goto retry
+
+:win7pe
+  initrd ${xieyi}://${next-server}/winpe/dostools/w7pe.iso
+  chain ${xieyi}://${next-server}/winpe/memdisk iso raw || goto retry
+
+:maxdos
+  initrd ${xieyi}://${next-server}/winpe/dostools/maxdos.ima
+  chain ${xieyi}://${next-server}/winpe/memdisk || goto retry
+
+:diskgen
+  initrd ${xieyi}://${next-server}/winpe/dostools/diskgen.img
+  chain ${xieyi}://${next-server}/winpe/memdisk || goto retry
+
+:atih64
+  initrd ${xieyi}://${next-server}/winpe/dostools/atih64.img
+  chain ${xieyi}://${next-server}/winpe/memdisk || goto retry

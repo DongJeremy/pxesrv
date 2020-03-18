@@ -1,0 +1,82 @@
+# Language and Locale
+d-i debian-installer/language string en
+d-i debian-installer/country string CN
+d-i debian-installer/locale string en_US.UTF-8
+d-i keymap select us
+d-i localechooser/preferred-locale string en_US.UTF-8
+d-i localechooser/supported-locales en_US.UTF-8
+
+# Hostname / domain
+d-i netcfg/choose_interface select auto
+d-i netcfg/get_hostname string unassigned-hostname
+d-i netcfg/get_domain string unassigned-domain
+
+d-i mirror/country string manual
+d-i mirror/http/hostname string 192.168.1.21
+d-i mirror/http/directory string /ubuntu
+d-i mirror/http/proxy string
+d-i mirror/http/mirror select 192.168.1.21
+
+d-i apt-setup/non-free boolean false
+d-i apt-setup/contrib boolean false
+d-i apt-setup/mirror/error     select     Retry
+d-i apt-setup/security_host    string
+d-i apt-setup/security-updates-failed     error
+d-i debian-installer/allow_unauthenticated boolean true
+
+# Keyboard
+d-i console-setup/ask_detect boolean false
+d-i keyboard-configuration/layout select USA
+d-i keyboard-configuration/variant select USA
+d-i keyboard-configuration/modelcode string pc105
+
+# Timezone / Time
+d-i time/zone string UTC
+d-i clock-setup/utc-auto boolean true
+d-i clock-setup/utc boolean true
+d-i clock-setup/ntp boolean false
+
+# Packages Policy
+d-i pkgsel/include string openssh-server vim
+d-i pkgsel/install-language-support boolean false
+d-i pkgsel/update-policy select none
+d-i pkgsel/upgrade select none
+tasksel tasksel/first multiselect standard, ubuntu-server
+
+# Partitioning
+d-i partman-auto/method string lvm
+d-i partman-auto-lvm/guided_size string max
+d-i partman-auto/choose_recipe select atomic
+d-i partman-auto/disk string /dev/sda
+d-i partman-lvm/confirm boolean true
+d-i partman-lvm/confirm_nooverwrite boolean true
+d-i partman-lvm/device_remove_lvm boolean true
+d-i partman/confirm_nooverwrite boolean true
+d-i partman/confirm boolean true
+d-i partman/confirm_write_new_label boolean true
+d-i partman/choose_partition select finish
+
+# Create packer user account.
+d-i passwd/user-fullname string sinocom
+d-i passwd/username string sinocom
+d-i passwd/user-password password sinocom
+d-i passwd/user-password-again password sinocom
+d-i user-setup/allow-password-weak boolean true
+d-i user-setup/encrypt-home boolean false
+d-i passwd/user-default-groups sinocom sudo
+
+# Root User
+d-i passwd/root-login boolean true
+d-i passwd/root-password password password
+d-i passwd/root-password-again password password
+
+# Boot loader installation
+d-i grub-installer/only_debian boolean true
+d-i grub-installer/with_other_os boolean true
+
+d-i finish-install/reboot_in_progress note
+d-i cdrom-detect/eject boolean true
+d-i preseed/late_command string \
+sed -i 's/http:\/\/.*\/ubuntu/http:\/\/mirrors.aliyun.com\/ubuntu/' /target/etc/apt/sources.list; \
+echo "PermitRootLogin yes" >> /target/etc/ssh/sshd_config; \
+echo "UseDNS no" >> /target/etc/ssh/sshd_config
