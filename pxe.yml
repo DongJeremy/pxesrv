@@ -12,13 +12,13 @@ tftp:
 
 # dhcp 服务配置
 dhcp:
-  listen_ip: 192.168.1.21
+  listen_ip: 192.168.1.61
   listen_port: 67
   start_ip: 192.168.1.201
   lease_range: 10
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  tftp_server: 192.168.1.21
-  pxe_file: http://192.168.1.21/menu.ipxe
+  tftp_server: 192.168.1.61
+  pxe_file: http://192.168.1.61/menu.ipxe
 

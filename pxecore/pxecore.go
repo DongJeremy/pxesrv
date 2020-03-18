@@ -17,21 +17,25 @@ func (s *Server) Serve() error {
 
 	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.Config.DHCP.IP, s.Config.DHCP.Port))
 	if err != nil {
+		log.Errorf("start DHCP failed, %s", err)
 		return err
 	}
 
-	a, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%s", s.Config.TFTP.IP, s.Config.TFTP.Port))
+	a, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%s", s.Config.TFTP.IP, s.Config.TFTP.Port))
 	if err != nil {
+		log.Errorf("resolveUDP failed, %s", err)
 		return err
 	}
-	tftp, err := net.ListenUDP("udp", a)
+	tftp, err := net.ListenUDP("udp4", a)
 	if err != nil {
+		log.Errorf("start TFTP failed, %s", err)
 		dhcp.Close()
 		return err
 	}
 
-	http, err := net.Listen("tcp", fmt.Sprintf("%s:%s", s.Config.HTTP.IP, s.Config.HTTP.Port))
+	http, err := net.Listen("tcp4", fmt.Sprintf("%s:%s", s.Config.HTTP.IP, s.Config.HTTP.Port))
 	if err != nil {
+		log.Errorf("start HTTP failed, %s", err)
 		dhcp.Close()
 		tftp.Close()
 		return err
