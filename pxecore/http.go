@@ -3,13 +3,15 @@ package pxecore
 import (
 	"net"
 	"net/http"
+	"path/filepath"
 	"time"
 )
 
 func (s *Server) serveHTTP(l net.Listener) error {
 	listen := net.JoinHostPort(s.Config.HTTP.IP, s.Config.HTTP.Port)
-	http.Handle("/", http.FileServer(http.Dir(s.Config.HTTP.RootPath)))
-	log.Printf("starting http server %s and handle on path: %s", listen, s.Config.HTTP.RootPath)
+	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.HTTP.Root)
+	http.Handle("/", http.FileServer(http.Dir(rootPath)))
+	log.Printf("starting http server %s and handle on path: %s", listen, rootPath)
 
 	httpServer := &http.Server{
 		Addr:           s.Config.HTTP.Port, // 监听的地址和端口

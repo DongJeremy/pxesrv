@@ -12,5 +12,6 @@ func main() {
 	flag.Parse()
 	log.Info("starting pxe server...")
 	serve := pxecore.Server{Config: pxecore.GetConf(*configFileName)}
+	serve.Prepare()
 	serve.Serve()
 }

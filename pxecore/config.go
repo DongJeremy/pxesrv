@@ -8,17 +8,25 @@ import (
 
 // Config config for pxe
 type Config struct {
-	HTTP HTTP `yaml:"http"`
-	TFTP TFTP `yaml:"tftp"`
-	DHCP DHCP `yaml:"dhcp"`
+	HTTP   HTTP   `yaml:"http"`
+	TFTP   TFTP   `yaml:"tftp"`
+	DHCP   DHCP   `yaml:"dhcp"`
+	Common Common `yaml:"common"`
+}
+
+// HTTP config
+type Common struct {
+	// which ip address that http server listening
+	RootPath   string `yaml:"root_path,omitempty"`
+	NextServer string `yaml:"next_server,omitempty"`
 }
 
 // HTTP config
 type HTTP struct {
 	// which ip address that http server listening
-	IP       string `yaml:"listen_ip,omitempty"`
-	Port     string `yaml:"listen_port,omitempty"` // listening port of http server
-	RootPath string `yaml:"rootpath,omitempty"`    // http file server path
+	IP   string `yaml:"listen_ip,omitempty"`
+	Port string `yaml:"listen_port,omitempty"` // listening port of http server
+	Root string `yaml:"rootpath,omitempty"`    // http file server path
 }
 
 // TFTP config
@@ -47,7 +55,7 @@ func GetConf(filename string) Config {
 	// set default options
 	c.HTTP.IP = "0.0.0.0"
 	c.HTTP.Port = "80"
-	c.HTTP.RootPath = "/mnt/dhtp/http"
+	c.HTTP.Root = "/mnt/dhtp/http"
 	c.TFTP.IP = "0.0.0.0"
 	c.TFTP.Root = "/mnt/dhtp/tftp"
 	c.TFTP.Port = "69"

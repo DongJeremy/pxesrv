@@ -13,6 +13,16 @@ type Server struct {
 
 var log = GetLogger("pxecore")
 
+func (s *Server) Prepare() error {
+	if err := s.LoadTemplates(); err != nil {
+		return err
+	}
+	if err := s.RenderFile(); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Server) Serve() error {
 
 	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.Config.DHCP.IP, s.Config.DHCP.Port))
