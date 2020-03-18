@@ -35,7 +35,7 @@ upx --brute pxesrv
 install -d -p %{buildroot}/usr/local/pxeserver/
 install -p -m 0755 pxesrv %{buildroot}/usr/local/pxeserver/%{name}
 install -p -m 0644 pxe.yml %{buildroot}/usr/local/pxeserver/
-cp -a netboot/ %{buildroot}/usr/local/pxeserver/
+cp -a {netboot,templates} %{buildroot}/usr/local/pxeserver/
 
 mkdir -p $RPM_BUILD_ROOT%{_unitdir}
 install -m 0644 %{name}.service $RPM_BUILD_ROOT%{_unitdir}
