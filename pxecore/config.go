@@ -38,19 +38,22 @@ type TFTP struct {
 
 // DHCP config
 type DHCP struct {
-	IP         string `yaml:"listen_ip,omitempty"` // which ip address that dhcp server was listening on
+	ServerID   string `yaml:"server_id,omitempty"` // which ip address that dhcp server was listening on
+	Interface  string `yaml:"interface,omitempty"`
 	Port       string `yaml:"listen_port,omitempty"`
-	TftpServer string `yaml:"tftp_server,omitempty"`
 	StartIP    string `yaml:"start_ip"`
-	Range      int    `yaml:"lease_range"`       // lease ip address count
+	EndIP      string `yaml:"end_ip"` // lease ip address count
+	LeasesFile string `yaml:"leases_file"`
+	Leases     string `yaml:"leases"`
 	NetMask    string `yaml:"netmask,omitempty"` // default /24
 	Router     string `yaml:"router,omitempty"`
 	DNSServer  string `yaml:"dns_server,omitempty"`
+	TFTPServer string `yaml:"tftp_server,omitempty"`
 	PxeFile    string `yaml:"pxe_file"` // pxe file name
 }
 
 // GetConf return runtime configurations
-func GetConf(filename string) Config {
+func GetConf(filename string) *Config {
 	c := new(Config)
 	// set default options
 	c.HTTP.IP = "0.0.0.0"
@@ -59,10 +62,10 @@ func GetConf(filename string) Config {
 	c.TFTP.IP = "0.0.0.0"
 	c.TFTP.Root = "/mnt/dhtp/tftp"
 	c.TFTP.Port = "69"
-	c.DHCP.IP = "0.0.0.0"
+	c.DHCP.ServerID = "0.0.0.0"
 	c.DHCP.Port = "67"
 	c.DHCP.StartIP = "192.168.1.201"
-	c.DHCP.Range = 10
+	c.DHCP.EndIP = "192.168.1.210"
 	c.DHCP.PxeFile = "pxelinux.0"
 	c.DHCP.NetMask = "255.255.255.0"
 	f, err := ioutil.ReadFile(filename)
@@ -73,5 +76,5 @@ func GetConf(filename string) Config {
 	if err != nil {
 		log.Errorf("parse config file failed, %s", err)
 	}
-	return *c
+	return c
 }

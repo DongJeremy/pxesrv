@@ -3,15 +3,23 @@ package pxecore
 import (
 	"fmt"
 	"net"
+
+	"github.com/insomniacslk/dhcp/dhcpv4/server4"
 )
 
 // A Server boots machines using a Booter.
 type Server struct {
-	Config Config
-	errs   chan error
+	Config    *Config
+	errs      chan error
+	Server4   *server4.Server
+	Handlers4 []Handler4
 }
 
 var log = GetLogger("pxecore")
+
+func NewServer(config *Config) *Server {
+	return &Server{Config: config, errs: make(chan error, 5)}
+}
 
 func (s *Server) Prepare() error {
 	if err := s.LoadTemplates(); err != nil {
@@ -27,12 +35,6 @@ func (s *Server) Prepare() error {
 
 func (s *Server) Serve() error {
 
-	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.Config.DHCP.IP, s.Config.DHCP.Port))
-	if err != nil {
-		log.Errorf("start DHCP failed, %s", err)
-		return err
-	}
-
 	a, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%s", s.Config.TFTP.IP, s.Config.TFTP.Port))
 	if err != nil {
 		log.Errorf("resolveUDP failed, %s", err)
@@ -41,14 +43,12 @@ func (s *Server) Serve() error {
 	tftp, err := net.ListenUDP("udp4", a)
 	if err != nil {
 		log.Errorf("start TFTP failed, %s", err)
-		dhcp.Close()
 		return err
 	}
 
 	http, err := net.Listen("tcp4", fmt.Sprintf("%s:%s", s.Config.HTTP.IP, s.Config.HTTP.Port))
 	if err != nil {
 		log.Errorf("start HTTP failed, %s", err)
-		dhcp.Close()
 		tftp.Close()
 		return err
 	}
@@ -57,17 +57,15 @@ func (s *Server) Serve() error {
 	// will likely generate some spurious errors from the other
 	// goroutines, and we want them to be able to dump them without
 	// blocking.
-	s.errs = make(chan error, 5)
 
 	//log.debug("Init", "Starting Pixiecore goroutines")
 
-	go func() { s.errs <- s.serveDHCP(dhcp) }()
+	go func() { s.errs <- s.serveDHCP() }()
 	go func() { s.errs <- s.serveTFTP(tftp) }()
 	go func() { s.errs <- s.serveHTTP(http) }()
 
 	// Wait for either a fatal error, or Shutdown().
 	err = <-s.errs
-	dhcp.Close()
 	tftp.Close()
 	http.Close()
 	return err

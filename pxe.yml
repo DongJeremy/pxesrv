@@ -12,10 +12,12 @@ tftp:
 
 # dhcp config
 dhcp:
-  listen_ip: 0.0.0.0
+  server_id: 192.168.1.21
   listen_port: 67
   start_ip: 192.168.1.201
-  lease_range: 10
+  end_ip: 192.168.1.210
+  leases_file: leases.txt
+  leases: 10s
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
@@ -26,4 +28,3 @@ common:
   #root_path: E:\ProgramData\Go\workspace\pxesrv
   root_path: /usr/local/pxeserver
   next_server: http://192.168.1.61
-

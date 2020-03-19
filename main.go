@@ -11,7 +11,7 @@ func main() {
 	var configFileName = flag.String("c", "pxe.yml", "config file path (default config.ini)")
 	flag.Parse()
 	log.Info("starting pxe server...")
-	serve := pxecore.Server{Config: pxecore.GetConf(*configFileName)}
+	serve := pxecore.NewServer(pxecore.GetConf(*configFileName))
 	serve.Prepare()
 	serve.Serve()
 }
