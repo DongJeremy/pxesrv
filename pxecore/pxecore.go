@@ -22,7 +22,6 @@ func (s *Server) Prepare() error {
 		log.Errorf("error during template rendering, error: %s", err)
 		return err
 	}
-	log.Print("templates rendering successful")
 	return nil
 }
 

@@ -1,16 +1,16 @@
-# http 服务配置
+# http server config
 http:
   listen_ip: 0.0.0.0
   listemn_port: 80
   rootpath: netboot
 
-# tftp_files 服务配置
+# tftp config
 tftp:
   tftp_root: netboot
   listen_ip: 0.0.0.0
   listen_port: 69
 
-# dhcp 服务配置
+# dhcp config
 dhcp:
   listen_ip: 0.0.0.0
   listen_port: 67
