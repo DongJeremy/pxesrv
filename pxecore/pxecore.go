@@ -15,11 +15,14 @@ var log = GetLogger("pxecore")
 
 func (s *Server) Prepare() error {
 	if err := s.LoadTemplates(); err != nil {
+		log.Errorf("error during template loading, error: %s", err)
 		return err
 	}
 	if err := s.RenderFile(); err != nil {
+		log.Errorf("error during template rendering, error: %s", err)
 		return err
 	}
+	log.Print("templates rendering successful")
 	return nil
 }
 

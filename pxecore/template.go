@@ -47,6 +47,7 @@ func (s *Server) RenderFile() (err error) {
 		}
 		f, err = os.OpenFile(destFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
+			log.Errorf("error during template rendering In template %s", destFile)
 			return
 		}
 		defer f.Close()
@@ -56,5 +57,6 @@ func (s *Server) RenderFile() (err error) {
 			return
 		}
 	}
+	log.Println("templates rendering successful")
 	return nil
 }
