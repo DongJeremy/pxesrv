@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/chappjc/logrus-prefix v0.0.0-20180227015900-3a1d64819adb
 	github.com/krolaw/dhcp4 v0.0.0-20190909130307-a50d88189771
+	github.com/mash/go-accesslog v1.1.0
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/onsi/ginkgo v1.12.0 // indirect

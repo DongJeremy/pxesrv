@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	log_prefixed "github.com/chappjc/logrus-prefix"
+	"github.com/mash/go-accesslog"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 )
@@ -13,6 +14,13 @@ var (
 	globalLogger   *logrus.Logger
 	getLoggerMutex sync.Mutex
 )
+
+type logger struct {
+}
+
+func (l logger) Log(record accesslog.LogRecord) {
+	log.Println(record.Method + " " + record.Uri)
+}
 
 // GetLogger returns a configured logger instance
 func GetLogger(prefix string) *logrus.Entry {

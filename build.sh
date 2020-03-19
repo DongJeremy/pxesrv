@@ -7,4 +7,7 @@ git archive --format tar.gz --output ../v$version.tar.gz master --prefix pxesrv-
 /usr/bin/cp ../v$version.tar.gz /root/rpmbuild/SOURCES
 rpmbuild -ba pxesrv.spec
 
+mkdir -p ../dist
+/usr/bin/cp /root/rpmbuild/RPMS/x86_64/pxesrv*.rpm /root/rpmbuild/SRPMS/pxesrv* ../dist
+
 exit 0

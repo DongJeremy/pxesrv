@@ -5,12 +5,16 @@ import (
 	"net/http"
 	"path/filepath"
 	"time"
+
+	"github.com/mash/go-accesslog"
 )
 
 func (s *Server) serveHTTP(l net.Listener) error {
 	listen := net.JoinHostPort(s.Config.HTTP.IP, s.Config.HTTP.Port)
 	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.HTTP.Root)
-	http.Handle("/", http.FileServer(http.Dir(rootPath)))
+
+	accessLogger := logger{}
+	http.Handle("/", accesslog.NewLoggingHandler(http.FileServer(http.Dir(rootPath)), accessLogger))
 	log.Printf("starting http server %s and handle on path: %s", listen, rootPath)
 
 	httpServer := &http.Server{
