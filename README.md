@@ -13,34 +13,25 @@ Currently, only Linux(CentOS[6/7/8], RHEL[6/7/8], Debian and Ubuntu) which is bo
 The following are configs that can be passed to `pxesrv` when running from the command line:
 
 ```yaml
-# http server config
-http:
-  listen_ip: 0.0.0.0
-  listemn_port: 80
-  rootpath: netboot
+# server config
+common:
+  export_ip: 192.168.1.190
+  #root_path: E:\ProgramData\workspace\pxesrv
+  root_path: /opt/pxesrv
 
-# tftp config
-tftp:
+pxe:
+  listen_ip: 0.0.0.0
+  http_port: 80
+  http_root: netboot
+  tftp_port: 69
   tftp_root: netboot
-  listen_ip: 0.0.0.0
-  listen_port: 69
-
-# dhcp config
-dhcp:
-  listen_ip: 0.0.0.0
-  listen_port: 67
+  dhcp_port: 67
   start_ip: 192.168.1.201
   lease_range: 10
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  tftp_server: 192.168.1.61
-  pxe_file: http://192.168.1.61/menu.ipxe
-
-common:
-  #root_path: E:\ProgramData\Go\workspace\pxesrv
-  root_path: /usr/local/pxeserver
-  next_server: http://192.168.1.61
+  pxe_file: ipxelinux.0
 
 ```
 
