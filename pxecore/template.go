@@ -1,6 +1,7 @@
 package pxecore
 
 import (
+	"fmt"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -35,8 +36,9 @@ func (s *Server) LoadTemplates() (err error) {
 
 // RenderFile replace variable from config
 func (s *Server) RenderFile() (err error) {
+	netxServer := fmt.Sprintf("http://%s:%s", s.Config.Common.ExportIP, s.Config.PXE.HTTPPort)
 	renderData := map[string]string{
-		"NextServer": s.Config.Common.ExportIP,
+		"NextServer": netxServer,
 	}
 	var destFile string
 	var f *os.File

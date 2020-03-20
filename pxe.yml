@@ -2,7 +2,7 @@
 common:
   export_ip: 192.168.1.190
   #root_path: E:\ProgramData\workspace\pxesrv
-  root_path: /usr/local/pxeserver
+  root_path: /opt/pxesrv
 
 pxe:
   listen_ip: 0.0.0.0
