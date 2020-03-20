@@ -4,8 +4,8 @@ timeout 300
 
 display {{.NextServer}}/isolinux/boot.msg
 
-menu background http://192.168.1.200:80/isolinux/splash.jpg
-menu title Welcome to PXEServer http://192.168.1.200:80
+menu background {{.NextServer}}/isolinux/splash.jpg
+menu title Welcome to PXEServer {{.NextServer}}
 menu vshift 2
 menu rows 20
 menu margin 4
