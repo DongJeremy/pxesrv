@@ -12,18 +12,18 @@ tftp:
 
 # dhcp config
 dhcp:
-  listen_ip: 0.0.0.0
+  listen_ip: 192.168.1.200
   listen_port: 67
   start_ip: 192.168.1.201
   lease_range: 10
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  tftp_server: 192.168.1.61
-  pxe_file: http://192.168.1.61/menu.ipxe
+  tftp_server: 192.168.1.200
+  pxe_file: ipxelinux.0
 
 common:
-  #root_path: E:\ProgramData\Go\workspace\pxesrv
+  #root_path: E:\ProgramData\workspace\pxesrv
   root_path: /usr/local/pxeserver
-  next_server: http://192.168.1.61
+  next_server: http://192.168.1.200:80
 

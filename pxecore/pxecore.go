@@ -13,6 +13,7 @@ type Server struct {
 
 var log = GetLogger("pxecore")
 
+// Prepare env
 func (s *Server) Prepare() error {
 	if err := s.LoadTemplates(); err != nil {
 		log.Errorf("error during template loading, error: %s", err)
@@ -25,6 +26,7 @@ func (s *Server) Prepare() error {
 	return nil
 }
 
+// Serve export service
 func (s *Server) Serve() error {
 
 	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.Config.DHCP.IP, s.Config.DHCP.Port))

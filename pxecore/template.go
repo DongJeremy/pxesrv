@@ -11,10 +11,11 @@ var templates map[string]*template.Template
 
 const (
 	templatePath = "templates"
-	menuPath     = "netboot"
+	menuPath     = "netboot/pxelinux.cfg"
 	ksPath       = "netboot/linux/ks"
 )
 
+// LoadTemplates load tmpl from templates folder
 func (s *Server) LoadTemplates() (err error) {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
@@ -32,6 +33,7 @@ func (s *Server) LoadTemplates() (err error) {
 	return nil
 }
 
+// RenderFile replace variable from config
 func (s *Server) RenderFile() (err error) {
 	renderData := map[string]string{
 		"NextServer": s.Config.Common.NextServer,
@@ -40,7 +42,7 @@ func (s *Server) RenderFile() (err error) {
 	var f *os.File
 	for filename, template := range templates {
 		destFileName := strings.TrimSuffix(filename, ".tmpl")
-		if strings.Contains(destFileName, "menu") {
+		if strings.Contains(destFileName, "default") {
 			destFile = filepath.Join(s.Config.Common.RootPath, menuPath, destFileName)
 		} else {
 			destFile = filepath.Join(s.Config.Common.RootPath, ksPath, destFileName)

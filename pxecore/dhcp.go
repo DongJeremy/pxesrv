@@ -44,6 +44,7 @@ type lease struct {
 	expiry time.Time // When the lease expires
 }
 
+// DHCPHandler config
 type DHCPHandler struct {
 	ip            net.IP        // Server IP to use
 	options       dhcp.Options  // Options to send to DHCP Clients
@@ -53,6 +54,7 @@ type DHCPHandler struct {
 	leases        map[int]lease // Map to keep track of leases
 }
 
+// ServeDHCP dhcp service
 func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options dhcp.Options) (d dhcp.Packet) {
 	switch msgType {
 
@@ -122,6 +124,7 @@ func (h *DHCPHandler) freeLease() int {
 	return -1
 }
 
+// SelectOrderOrAll see code comment
 func SelectOrderOrAll(src dhcp.Options, options []byte) []dhcp.Option {
 	if options == nil {
 		opts := make([]dhcp.Option, 0, len(src))
@@ -139,6 +142,7 @@ func SelectOrderOrAll(src dhcp.Options, options []byte) []dhcp.Option {
 	return SelectOrder(src, options)
 }
 
+// SelectOrder see code comment
 func SelectOrder(src dhcp.Options, options []byte) []dhcp.Option {
 	opts := make([]dhcp.Option, 0, len(options))
 	for _, v := range options {
@@ -158,16 +162,16 @@ func SelectOrder(src dhcp.Options, options []byte) []dhcp.Option {
 // ReplyPacket creates a reply packet that a Server would send to a client.
 // It uses the req Packet param to copy across common/necessary fields to
 // associate the reply the request.
-func ReplyPacket(req dhcp.Packet, mt dhcp.MessageType, serverId, yIAddr net.IP, leaseDuration time.Duration, options []dhcp.Option) dhcp.Packet {
+func ReplyPacket(req dhcp.Packet, mt dhcp.MessageType, serverID, yIAddr net.IP, leaseDuration time.Duration, options []dhcp.Option) dhcp.Packet {
 	p := dhcp.NewPacket(dhcp.BootReply)
 	p.SetXId(req.XId())
 	p.SetFlags(req.Flags())
 	p.SetYIAddr(yIAddr)
-	p.SetSIAddr(serverId)
+	p.SetSIAddr(serverID)
 	p.SetGIAddr(req.GIAddr())
 	p.SetCHAddr(req.CHAddr())
 	p.AddOption(dhcp.OptionDHCPMessageType, []byte{byte(mt)})
-	p.AddOption(dhcp.OptionServerIdentifier, serverId.To4())
+	p.AddOption(dhcp.OptionServerIdentifier, serverID.To4())
 	if leaseDuration > 0 {
 		p.AddOption(dhcp.OptionIPAddressLeaseTime, dhcp.OptionsLeaseTime(leaseDuration))
 	}

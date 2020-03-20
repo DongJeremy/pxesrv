@@ -13,3 +13,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+/netboot/centos
+/netboot/rhel
+!/netboot/centos/*/*.gitkeep
+!/netboot/rhel/*/*.gitkeep

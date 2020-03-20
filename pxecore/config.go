@@ -14,7 +14,7 @@ type Config struct {
 	Common Common `yaml:"common"`
 }
 
-// HTTP config
+// Common config
 type Common struct {
 	// which ip address that http server listening
 	RootPath   string `yaml:"root_path,omitempty"`
