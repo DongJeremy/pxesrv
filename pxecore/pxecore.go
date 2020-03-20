@@ -29,13 +29,13 @@ func (s *Server) Prepare() error {
 // Serve export service
 func (s *Server) Serve() error {
 
-	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.Config.DHCP.IP, s.Config.DHCP.Port))
+	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.Config.PXE.ListenIP, s.Config.PXE.DHCPPort))
 	if err != nil {
 		log.Errorf("start DHCP failed, %s", err)
 		return err
 	}
 
-	a, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%s", s.Config.TFTP.IP, s.Config.TFTP.Port))
+	a, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%s", s.Config.PXE.ListenIP, s.Config.PXE.TFTPPort))
 	if err != nil {
 		log.Errorf("resolveUDP failed, %s", err)
 		return err
@@ -47,7 +47,7 @@ func (s *Server) Serve() error {
 		return err
 	}
 
-	http, err := net.Listen("tcp4", fmt.Sprintf("%s:%s", s.Config.HTTP.IP, s.Config.HTTP.Port))
+	http, err := net.Listen("tcp4", fmt.Sprintf("%s:%s", s.Config.PXE.ListenIP, s.Config.PXE.HTTPPort))
 	if err != nil {
 		log.Errorf("start HTTP failed, %s", err)
 		dhcp.Close()

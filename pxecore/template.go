@@ -36,7 +36,7 @@ func (s *Server) LoadTemplates() (err error) {
 // RenderFile replace variable from config
 func (s *Server) RenderFile() (err error) {
 	renderData := map[string]string{
-		"NextServer": s.Config.Common.NextServer,
+		"NextServer": s.Config.Common.ExportIP,
 	}
 	var destFile string
 	var f *os.File

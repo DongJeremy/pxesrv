@@ -1,29 +1,21 @@
-# http server config
-http:
-  listen_ip: 0.0.0.0
-  listemn_port: 80
-  rootpath: netboot
+# server config
+common:
+  export_ip: 192.168.1.190
+  #root_path: E:\ProgramData\workspace\pxesrv
+  root_path: /usr/local/pxeserver
 
-# tftp config
-tftp:
+pxe:
+  listen_ip: 0.0.0.0
+  http_port: 80
+  http_root: netboot
+  tftp_port: 69
   tftp_root: netboot
-  listen_ip: 0.0.0.0
-  listen_port: 69
-
-# dhcp config
-dhcp:
-  listen_ip: 192.168.1.200
-  listen_port: 67
+  dhcp_port: 67
   start_ip: 192.168.1.201
   lease_range: 10
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  tftp_server: 192.168.1.200
   pxe_file: ipxelinux.0
 
-common:
-  #root_path: E:\ProgramData\workspace\pxesrv
-  root_path: /usr/local/pxeserver
-  next_server: http://192.168.1.200:80
 

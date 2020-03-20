@@ -15,22 +15,22 @@ func init() {
 }
 
 func (s *Server) serveDHCP(conn dhcp.ServeConn) error {
-	serverIP := net.ParseIP(s.Config.DHCP.IP)
+	serverIP := net.ParseIP(s.Config.Common.ExportIP)
 	handler := &DHCPHandler{
 		ip:            serverIP,
 		leaseDuration: 4 * time.Hour,
-		start:         net.ParseIP(s.Config.DHCP.StartIP),
-		leaseRange:    s.Config.DHCP.Range,
+		start:         net.ParseIP(s.Config.PXE.StartIP),
+		leaseRange:    s.Config.PXE.Range,
 		leases:        make(map[int]lease, 200),
 		options: dhcp.Options{
-			dhcp.OptionSubnetMask:       net.ParseIP(s.Config.DHCP.NetMask).To4(),
-			dhcp.OptionRouter:           []byte(s.Config.DHCP.Router),
-			dhcp.OptionDomainNameServer: []byte(s.Config.DHCP.DNSServer),  // Presuming Server is also your DNS server
-			dhcp.OptionTFTPServerName:   []byte(s.Config.DHCP.TftpServer), // tftp_files server address
-			dhcp.OptionBootFileName:     []byte(s.Config.DHCP.PxeFile),    // set boot filename option
+			dhcp.OptionSubnetMask:       net.ParseIP(s.Config.PXE.NetMask).To4(),
+			dhcp.OptionRouter:           []byte(s.Config.PXE.Router),
+			dhcp.OptionDomainNameServer: []byte(s.Config.PXE.DNSServer),   // Presuming Server is also your DNS server
+			dhcp.OptionTFTPServerName:   []byte(s.Config.Common.ExportIP), // tftp_files server address
+			dhcp.OptionBootFileName:     []byte(s.Config.PXE.PXEFile),     // set boot filename option
 		},
 	}
-	log.Printf("starting dhcp server and linstening on %s:%s", s.Config.DHCP.IP, s.Config.DHCP.Port)
+	log.Printf("starting dhcp server and linstening on %s:%s", s.Config.PXE.ListenIP, s.Config.PXE.DHCPPort)
 
 	if err := dhcp.Serve(conn, handler); err != nil {
 		log.Errorf("TFTP server shut down: %s", err)
