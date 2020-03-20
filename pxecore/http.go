@@ -5,17 +5,14 @@ import (
 	"net/http"
 	"path/filepath"
 	"time"
-
-	"github.com/mash/go-accesslog"
 )
 
 func (s *Server) serveHTTP(l net.Listener) error {
 	listen := net.JoinHostPort(s.Config.HTTP.IP, s.Config.HTTP.Port)
 	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.HTTP.Root)
 
-	accessLogger := logger{}
-	http.Handle("/", accesslog.NewLoggingHandler(http.FileServer(http.Dir(rootPath)), accessLogger))
-	log.Printf("starting http server %s and handle on path: %s", listen, rootPath)
+	http.Handle("/", http.FileServer(http.Dir(rootPath)))
+	s.log("http", "starting http server %s and handle on path: %s", listen, rootPath)
 
 	httpServer := &http.Server{
 		Addr:           s.Config.HTTP.Port, // 监听的地址和端口
@@ -26,7 +23,6 @@ func (s *Server) serveHTTP(l net.Listener) error {
 		TLSConfig:      nil,                // 配置TLS
 	}
 	if err := httpServer.Serve(l); err != nil {
-		log.Errorf("HTTP server shut down: %s", err)
 		return err
 	}
 	return nil

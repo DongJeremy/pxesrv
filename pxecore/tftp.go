@@ -1,55 +1,72 @@
 package pxecore
 
 import (
+	"bytes"
 	"io"
+	"io/ioutil"
 	"net"
-	"os"
-	"path/filepath"
-	"time"
+	"strconv"
+	"strings"
 
-	"github.com/pin/tftp"
+	"github.com/DongJeremy/pxesrv/tftp"
 )
 
-// readHandler is called when client starts file download from server
-func (s *Server) tftpReadHandler(filename string, rf io.ReaderFrom) error {
-	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.TFTP.Root, filename)
-	file, err := os.Open(rootPath)
-	if err != nil {
-		log.Errorf("%v", err)
-		return err
+func (s *Server) serveTFTP(l net.PacketConn) error {
+	ts := tftp.Server{
+		Handler:     s.handleTFTP,
+		InfoLog:     func(msg string) { s.debug("TFTP", msg) },
+		TransferLog: s.logTFTPTransfer,
 	}
-	n, err := rf.ReadFrom(file)
+	err := ts.Serve(l)
 	if err != nil {
-		log.Errorf("%v", err)
-		return err
+		return PXEErrorFromString("TFTP server shut down: %s", err)
 	}
-	log.Printf("TFTP: tftp_files %d bytes sent", n)
 	return nil
 }
 
-// writeHandler is called when client starts file upload to server
-func (s *Server) tftWriteHandler(filename string, wt io.WriterTo) error {
-	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.TFTP.Root, filename)
-	file, err := os.OpenFile(rootPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0644)
-	if err != nil {
-		log.Errorf("%v", err)
-		return err
+func extractInfo(path string) (net.HardwareAddr, int, error) {
+	pathElements := strings.Split(path, "/")
+	if len(pathElements) != 2 {
+		return nil, 0, PXEErrorFromString("not found")
 	}
-	n, err := wt.WriteTo(file)
+
+	mac, err := net.ParseMAC(pathElements[0])
 	if err != nil {
-		log.Errorf("%v", err)
-		return err
+		return nil, 0, PXEErrorFromString("invalid MAC address %q", pathElements[0])
 	}
-	log.Printf("TFTP: tftp_files %d bytes received", n)
-	log.Printf("TFTP: tftp_files recieved and stored file to %s", rootPath)
-	return nil
+
+	i, err := strconv.Atoi(pathElements[1])
+	if err != nil {
+		return nil, 0, PXEErrorFromString("not found")
+	}
+
+	return mac, i, nil
 }
 
-func (s *Server) serveTFTP(l *net.UDPConn) error {
-	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.TFTP.Root)
-	tftpServer := tftp.NewServer(s.tftpReadHandler, s.tftWriteHandler)
-	tftpServer.SetTimeout(5 * time.Second) // optional
-	log.Printf("starting tftp server and listening on port %s handle on path: %s", s.Config.TFTP.Port, rootPath)
-	tftpServer.Serve(l) // blocks until s.Shutdown() is called
-	return nil
+func (s *Server) logTFTPTransfer(clientAddr net.Addr, path string, err error) {
+	mac, _, pathErr := extractInfo(path)
+	if pathErr != nil {
+		s.log("TFTP", "unable to extract mac from request:%v", pathErr)
+		return
+	}
+	if err != nil {
+		s.log("TFTP", "Send of %q to %s failed: %s", path, clientAddr, err)
+	} else {
+		s.log("TFTP", "Sent %q to %s", path, clientAddr)
+		s.machineEvent(mac, machineStateTFTP, "Sent iPXE to %s", clientAddr)
+	}
+}
+
+func (s *Server) handleTFTP(path string, clientAddr net.Addr) (io.ReadCloser, int64, error) {
+	_, i, err := extractInfo(path)
+	if err != nil {
+		return nil, 0, PXEErrorFromString("unknown path %q", path)
+	}
+
+	bs, ok := s.Ipxe[Firmware(i)]
+	if !ok {
+		return nil, 0, PXEErrorFromString("unknown firmware type %d", i)
+	}
+
+	return ioutil.NopCloser(bytes.NewBuffer(bs)), int64(len(bs)), nil
 }

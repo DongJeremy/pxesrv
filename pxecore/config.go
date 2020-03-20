@@ -1,6 +1,7 @@
 package pxecore
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
@@ -67,11 +68,11 @@ func GetConf(filename string) Config {
 	c.DHCP.NetMask = "255.255.255.0"
 	f, err := ioutil.ReadFile(filename)
 	if err != nil {
-		log.Errorf("read config file from %s failed, %s", filename, err)
+		fmt.Printf("read config file from %s failed, %s", filename, err)
 	}
 	err = yaml.Unmarshal(f, c)
 	if err != nil {
-		log.Errorf("parse config file failed, %s", err)
+		fmt.Printf("parse config file failed, %s", err)
 	}
 	return *c
 }
