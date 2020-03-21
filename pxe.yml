@@ -1,8 +1,8 @@
 # server config
-common:
-  export_ip: 192.168.1.190
-  #root_path: E:\ProgramData\workspace\pxesrv
-  root_path: /opt/pxesrv
+global:
+  ip_address: 192.168.1.190
+  #doc_root: E:\ProgramData\workspace\pxesrv
+  doc_root: /opt/pxesrv
 
 pxe:
   listen_ip: 0.0.0.0
@@ -17,5 +17,3 @@ pxe:
   router: 192.168.1.1
   dns_server: 114.114.114.114
   pxe_file: ipxelinux.0
-
-

@@ -21,7 +21,7 @@ func (s *Server) LoadTemplates() (err error) {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
-	templateLayoutPath := filepath.Join(s.Config.Common.RootPath, templatePath+"/*.tmpl")
+	templateLayoutPath := filepath.Join(s.Config.Global.DocRoot, templatePath+"/*.tmpl")
 	includeFiles, err := filepath.Glob(templateLayoutPath)
 	if err != nil {
 		return err
@@ -30,13 +30,13 @@ func (s *Server) LoadTemplates() (err error) {
 		fileName := filepath.Base(file)
 		templates[fileName] = template.Must(template.New(fileName).ParseFiles(file))
 	}
-	log.Println("templates loading successful")
+	log.Info("templates loading successful")
 	return nil
 }
 
 // RenderFile replace variable from config
 func (s *Server) RenderFile() (err error) {
-	netxServer := fmt.Sprintf("http://%s:%s", s.Config.Common.ExportIP, s.Config.PXE.HTTPPort)
+	netxServer := fmt.Sprintf("http://%s:%s", s.Config.Global.IPAddress, s.Config.PXE.HTTPPort)
 	renderData := map[string]string{
 		"NextServer": netxServer,
 	}
@@ -45,9 +45,9 @@ func (s *Server) RenderFile() (err error) {
 	for filename, template := range templates {
 		destFileName := strings.TrimSuffix(filename, ".tmpl")
 		if strings.Contains(destFileName, "default") {
-			destFile = filepath.Join(s.Config.Common.RootPath, menuPath, destFileName)
+			destFile = filepath.Join(s.Config.Global.DocRoot, menuPath, destFileName)
 		} else {
-			destFile = filepath.Join(s.Config.Common.RootPath, ksPath, destFileName)
+			destFile = filepath.Join(s.Config.Global.DocRoot, ksPath, destFileName)
 		}
 		f, err = os.OpenFile(destFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
@@ -61,6 +61,6 @@ func (s *Server) RenderFile() (err error) {
 			return
 		}
 	}
-	log.Println("templates rendering successful")
+	log.Info("templates rendering successful")
 	return nil
 }

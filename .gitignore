@@ -17,3 +17,5 @@
 /netboot/rhel
 !/netboot/centos/*/*.gitkeep
 !/netboot/rhel/*/*.gitkeep
+*.ks
+default

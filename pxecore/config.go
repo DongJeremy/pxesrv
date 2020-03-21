@@ -9,13 +9,13 @@ import (
 // Config config for pxe
 type Config struct {
 	PXE    PXE    `yaml:"pxe"`
-	Common Common `yaml:"common"`
+	Global Global `yaml:"global"`
 }
 
-// Common config
-type Common struct {
-	ExportIP string `yaml:"export_ip,omitempty"`
-	RootPath string `yaml:"root_path,omitempty"`
+// Global config
+type Global struct {
+	IPAddress string `yaml:"ip_address,omitempty"`
+	DocRoot   string `yaml:"doc_root,omitempty"`
 }
 
 // PXE config

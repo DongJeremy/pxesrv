@@ -15,7 +15,7 @@ func init() {
 }
 
 func (s *Server) serveDHCP(conn dhcp.ServeConn) error {
-	serverIP := net.ParseIP(s.Config.Common.ExportIP)
+	serverIP := net.ParseIP(s.Config.Global.IPAddress)
 	handler := &DHCPHandler{
 		ip:            serverIP,
 		leaseDuration: 4 * time.Hour,
@@ -25,12 +25,12 @@ func (s *Server) serveDHCP(conn dhcp.ServeConn) error {
 		options: dhcp.Options{
 			dhcp.OptionSubnetMask:       net.ParseIP(s.Config.PXE.NetMask).To4(),
 			dhcp.OptionRouter:           []byte(s.Config.PXE.Router),
-			dhcp.OptionDomainNameServer: []byte(s.Config.PXE.DNSServer),   // Presuming Server is also your DNS server
-			dhcp.OptionTFTPServerName:   []byte(s.Config.Common.ExportIP), // tftp_files server address
-			dhcp.OptionBootFileName:     []byte(s.Config.PXE.PXEFile),     // set boot filename option
+			dhcp.OptionDomainNameServer: []byte(s.Config.PXE.DNSServer),    // Presuming Server is also your DNS server
+			dhcp.OptionTFTPServerName:   []byte(s.Config.Global.IPAddress), // tftp_files server address
+			dhcp.OptionBootFileName:     []byte(s.Config.PXE.PXEFile),      // set boot filename option
 		},
 	}
-	log.Printf("starting dhcp server and linstening on %s:%s", s.Config.PXE.ListenIP, s.Config.PXE.DHCPPort)
+	log.Infof("starting dhcp server and linstening on %s:%s", s.Config.PXE.ListenIP, s.Config.PXE.DHCPPort)
 
 	if err := dhcp.Serve(conn, handler); err != nil {
 		log.Errorf("TFTP server shut down: %s", err)
@@ -72,7 +72,7 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 	reply:
 		pkg := ReplyPacket(p, dhcp.Offer, h.ip, dhcp.IPAdd(h.start, free), h.leaseDuration,
 			SelectOrderOrAll(h.options, options[dhcp.OptionParameterRequestList]))
-		log.Printf("DHCP: dhcp replied a package for client %s discovery", p.CHAddr())
+		log.Infof("DHCP: dhcp replied a package for client %s discovery", p.CHAddr())
 		return pkg
 
 	case dhcp.Request:
@@ -90,13 +90,13 @@ func (h *DHCPHandler) ServeDHCP(p dhcp.Packet, msgType dhcp.MessageType, options
 					h.leases[leaseNum] = lease{nic: p.CHAddr().String(), expiry: time.Now().Add(h.leaseDuration)}
 					pkg := ReplyPacket(p, dhcp.ACK, h.ip, reqIP, h.leaseDuration,
 						SelectOrderOrAll(h.options, options[dhcp.OptionParameterRequestList]))
-					log.Printf("DHCP: dhcp replied and allocation an ip address %s to client %s", reqIP, p.CHAddr())
+					log.Infof("DHCP: dhcp replied and allocation an ip address %s to client %s", reqIP, p.CHAddr())
 					return pkg
 				}
 			}
 		}
 		pkg := ReplyPacket(p, dhcp.NAK, h.ip, nil, 0, nil)
-		log.Printf("DHCP: dhcp replied a package to client, package: %v", h.options)
+		log.Infof("DHCP: dhcp replied a package to client, package: %v", h.options)
 		return pkg
 
 	case dhcp.Release, dhcp.Decline:

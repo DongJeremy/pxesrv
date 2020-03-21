@@ -11,8 +11,6 @@ type Server struct {
 	errs   chan error
 }
 
-var log = GetLogger("pxecore")
-
 // Prepare env
 func (s *Server) Prepare() error {
 	if err := s.LoadTemplates(); err != nil {

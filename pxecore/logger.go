@@ -1,50 +1,31 @@
 package pxecore
 
 import (
-	"io/ioutil"
-	"sync"
+	"os"
 
-	log_prefixed "github.com/chappjc/logrus-prefix"
 	"github.com/mash/go-accesslog"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
+	"github.com/op/go-logging"
 )
 
-var (
-	globalLogger   *logrus.Logger
-	getLoggerMutex sync.Mutex
+var format = logging.MustStringFormatter(
+	`%{color}%{time:2006-01-0215:04:05.999Z07:00} %{level:.5s} %{module:.10s}%{color:reset} %{message}`,
 )
+
+func init() {
+	//backend1 := logging.NewLogBackend(os.Stderr, "", 0)
+	backend2 := logging.NewLogBackend(os.Stderr, "", 0)
+	backend2Formatter := logging.NewBackendFormatter(backend2, format)
+	//backend1Leveled := logging.AddModuleLevel(backend1)
+	//backend1Leveled.SetLevel(logging.ERROR, "")
+	// Set the backends to be used.
+	logging.SetBackend(backend2Formatter)
+}
+
+var log = logging.MustGetLogger("pxecore")
 
 type logger struct {
 }
 
 func (l logger) Log(record accesslog.LogRecord) {
-	log.Println(record.Method + " " + record.Uri)
-}
-
-// GetLogger returns a configured logger instance
-func GetLogger(prefix string) *logrus.Entry {
-	if prefix == "" {
-		prefix = "<no prefix>"
-	}
-	if globalLogger == nil {
-		getLoggerMutex.Lock()
-		defer getLoggerMutex.Unlock()
-		logger := logrus.New()
-		logger.SetFormatter(&log_prefixed.TextFormatter{
-			FullTimestamp: true,
-		})
-		globalLogger = logger
-	}
-	return globalLogger.WithField("prefix", prefix)
-}
-
-// WithFile logs to the specified file in addition to the existing output.
-func WithFile(log *logrus.Entry, logfile string) {
-	log.Logger.AddHook(lfshook.NewHook(logfile, &logrus.TextFormatter{}))
-}
-
-// WithNoStdOutErr disables logging to stdout/stderr.
-func WithNoStdOutErr(log *logrus.Entry) {
-	log.Logger.SetOutput(ioutil.Discard)
+	log.Info(record.Method + " " + record.Uri)
 }

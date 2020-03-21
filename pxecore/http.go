@@ -11,11 +11,11 @@ import (
 
 func (s *Server) serveHTTP(l net.Listener) error {
 	listen := net.JoinHostPort(s.Config.PXE.ListenIP, s.Config.PXE.HTTPPort)
-	rootPath := filepath.Join(s.Config.Common.RootPath, s.Config.PXE.HTTPRoot)
+	rootPath := filepath.Join(s.Config.Global.DocRoot, s.Config.PXE.HTTPRoot)
 
 	accessLogger := logger{}
 	http.Handle("/", accesslog.NewLoggingHandler(http.FileServer(http.Dir(rootPath)), accessLogger))
-	log.Printf("starting http server %s and handle on path: %s", listen, rootPath)
+	log.Infof("starting http server %s and handle on path: %s", listen, rootPath)
 
 	httpServer := &http.Server{
 		Addr:           s.Config.PXE.HTTPRoot, // 监听的地址和端口
