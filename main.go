@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	"github.com/DongJeremy/pxesrv/pxecore"
+	"github.com/DongJeremy/pxesrv/core"
 	"github.com/op/go-logging"
 )
 
@@ -13,7 +13,10 @@ func main() {
 	var configFileName = flag.String("c", "pxe.yml", "config file path (default config.ini)")
 	flag.Parse()
 	log.Info("starting pxe server...")
-	serve := pxecore.Server{Config: pxecore.GetConf(*configFileName)}
-	serve.Prepare()
-	serve.Serve()
+	service := core.NewService()
+	err := service.Initialize(*configFileName)
+	if err != nil {
+		log.Panic(err)
+	}
+	service.Start()
 }

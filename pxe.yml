@@ -1,8 +1,8 @@
 # server config
 global:
-  ip_address: 192.168.1.190
-  #doc_root: E:\ProgramData\workspace\pxesrv
-  doc_root: /opt/pxesrv
+  ip_address: 192.168.1.200
+  doc_root: E:\ProgramData\workspace\pxesrv
+  #doc_root: /opt/pxesrv
 
 pxe:
   listen_ip: 0.0.0.0
@@ -12,8 +12,9 @@ pxe:
   tftp_root: netboot
   dhcp_port: 67
   start_ip: 192.168.1.201
-  lease_range: 10
+  end_ip: 192.168.1.220
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  pxe_file: ipxelinux.0
+  pxe_file: undionly.kpxe
+  ipxe_file: menu.ipxe

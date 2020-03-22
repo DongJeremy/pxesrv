@@ -1,4 +1,4 @@
-package pxecore
+package core
 
 import (
 	"os"
@@ -8,7 +8,7 @@ import (
 )
 
 var format = logging.MustStringFormatter(
-	`%{color}%{time:2006-01-0215:04:05.999Z07:00} %{level:.5s} %{module:.10s}%{color:reset} %{message}`,
+	`%{color}%{time:2006-01-02T15:04:05.999Z07:00} %{level:.5s} %{module:.10s}%{color:reset} %{message}`,
 )
 
 func init() {

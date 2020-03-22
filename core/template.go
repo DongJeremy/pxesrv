@@ -1,4 +1,4 @@
-package pxecore
+package core
 
 import (
 	"fmt"
@@ -12,16 +12,16 @@ var templates map[string]*template.Template
 
 const (
 	templatePath = "templates"
-	menuPath     = "netboot/pxelinux.cfg"
+	menuPath     = "netboot"
 	ksPath       = "netboot/linux/ks"
 )
 
 // LoadTemplates load tmpl from templates folder
-func (s *Server) LoadTemplates() (err error) {
+func (s *Service) LoadTemplates() (err error) {
 	if templates == nil {
 		templates = make(map[string]*template.Template)
 	}
-	templateLayoutPath := filepath.Join(s.Config.Global.DocRoot, templatePath+"/*.tmpl")
+	templateLayoutPath := filepath.Join(s.DocRoot, templatePath+"/*.tmpl")
 	includeFiles, err := filepath.Glob(templateLayoutPath)
 	if err != nil {
 		return err
@@ -35,8 +35,8 @@ func (s *Server) LoadTemplates() (err error) {
 }
 
 // RenderFile replace variable from config
-func (s *Server) RenderFile() (err error) {
-	netxServer := fmt.Sprintf("http://%s:%s", s.Config.Global.IPAddress, s.Config.PXE.HTTPPort)
+func (s *Service) RenderFile() (err error) {
+	netxServer := fmt.Sprintf("http://%s:%s", s.ServiceIP, s.HTTPPort)
 	renderData := map[string]string{
 		"NextServer": netxServer,
 	}
@@ -44,10 +44,10 @@ func (s *Server) RenderFile() (err error) {
 	var f *os.File
 	for filename, template := range templates {
 		destFileName := strings.TrimSuffix(filename, ".tmpl")
-		if strings.Contains(destFileName, "default") {
-			destFile = filepath.Join(s.Config.Global.DocRoot, menuPath, destFileName)
+		if strings.Contains(destFileName, "menu") {
+			destFile = filepath.Join(s.DocRoot, menuPath, destFileName)
 		} else {
-			destFile = filepath.Join(s.Config.Global.DocRoot, ksPath, destFileName)
+			destFile = filepath.Join(s.DocRoot, ksPath, destFileName)
 		}
 		f, err = os.OpenFile(destFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
