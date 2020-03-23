@@ -16,7 +16,7 @@ pxe:
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  #pxe_file: ipxelinux.0
-  pxe_file: undionly.kpxe
+  #pxe_file: undionly.kpxe
+  pxe_file: ipxe.pxe
   enable_ipxe: true 
   ipxe_file: menu.ipxe

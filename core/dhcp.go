@@ -28,7 +28,7 @@ func (s *Service) serveDHCP(conn dhcp.ServeConn) error {
 			dhcp.OptionTFTPServerName:   []byte(s.TFTPServerName), // tftp_files server address
 		},
 	}
-	log.Infof("[DHCP] starting dhcp server and linstening on %s:%s", s.ServiceIP, s.DHCPPort)
+	log.Infof("[DHCP] starting dhcp server on port %s(UDP)", s.DHCPPort)
 
 	if err := dhcp.Serve(conn, dhcpService); err != nil {
 		log.Errorf("DHCP server shut down: %s", err)
@@ -280,7 +280,7 @@ func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Op
 		s.addIPXEBootScript(reply)
 	} else {
 		// This is a PXE client; direct them to load the standard PXE boot image.
-		log.Infof("[TXN: %s] Client with MAC address %s is a regular PXE (or non-PXE) client; iPXE boot image 'tftp://%s/%s'.",
+		log.Infof("[TXN: %s] Client with MAC address %s is a regular PXE; iPXE boot image 'tftp://%s/%s'.",
 			transactionID,
 			request.CHAddr().String(),
 			s.ServiceIP,
