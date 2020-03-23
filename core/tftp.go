@@ -50,7 +50,7 @@ func (s *Service) serveTFTP(l *net.UDPConn) error {
 	rootPath := filepath.Join(s.DocRoot, s.TFTPRoot)
 	tftpServer := tftp.NewServer(s.tftpReadHandler, s.tftWriteHandler)
 	tftpServer.SetTimeout(5 * time.Second) // optional
-	log.Infof("starting tftp server and listening on port %s handle on path: %s", s.TFTPPort, rootPath)
+	log.Infof("[TFTP] starting tftp server and listening on port %s handle on path: %s", s.TFTPPort, rootPath)
 	tftpServer.Serve(l) // blocks until s.Shutdown() is called
 	return nil
 }

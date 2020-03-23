@@ -15,7 +15,7 @@ func (s *Service) serveHTTP(l net.Listener) error {
 
 	accessLogger := logger{}
 	http.Handle("/", accesslog.NewLoggingHandler(http.FileServer(http.Dir(rootPath)), accessLogger))
-	log.Infof("starting http server %s and handle on path: %s", listen, rootPath)
+	log.Infof("[HTTP] starting http server %s and handle on path: %s", listen, rootPath)
 
 	httpServer := &http.Server{
 		Addr:           s.HTTPRoot,      // 监听的地址和端口

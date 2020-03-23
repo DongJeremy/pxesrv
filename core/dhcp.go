@@ -28,7 +28,7 @@ func (s *Service) serveDHCP(conn dhcp.ServeConn) error {
 			dhcp.OptionTFTPServerName:   []byte(s.TFTPServerName), // tftp_files server address
 		},
 	}
-	log.Infof("starting dhcp server and linstening on %s:%s", s.ServiceIP, s.DHCPPort)
+	log.Infof("[DHCP] starting dhcp server and linstening on %s:%s", s.ServiceIP, s.DHCPPort)
 
 	if err := dhcp.Serve(conn, dhcpService); err != nil {
 		log.Errorf("DHCP server shut down: %s", err)
@@ -51,20 +51,6 @@ type DHCPService struct {
 	dhcpOptions        dhcp.Options
 	leasesByMACAddress map[string]*RecordLease
 	stateLock          *sync.Mutex
-}
-
-// NewDHCPService creates new Service state.
-func NewDHCPService() *DHCPService {
-	service := &DHCPService{
-		leasesByMACAddress: make(map[string]*RecordLease),
-		LeaseDuration:      24 * time.Hour,
-		dhcpOptions: dhcp.Options{
-			dhcp.OptionDomainNameServer: []byte{8, 8, 8, 8},
-		},
-		EnableIPXE: true,
-		stateLock:  &sync.Mutex{},
-	}
-	return service
 }
 
 // ServeDHCP handles an incoming DHCP request.
@@ -136,7 +122,7 @@ func (s *DHCPService) replyOffer(request dhcp.Packet, targetIP net.IP, requestOp
 		s.dhcpOptions.SelectOrderOrAll(requestOptions[dhcp.OptionParameterRequestList]),
 	)
 
-	log.Infof("[TXN: %s] Offer message from server with MAC address %s (IP '%s').",
+	log.Infof("[TXN: %s] Offer message to client with MAC address %s (IP '%s').",
 		transactionID,
 		clientMACAddress,
 		targetIP.String(),
@@ -218,10 +204,19 @@ func (s *DHCPService) handleRequest(request dhcp.Packet, requestOptions dhcp.Opt
 
 // Create an ACK reply packet (in response to Request packet).
 func (s *DHCPService) replyACK(request dhcp.Packet, targetIP net.IP, requestOptions dhcp.Options) (response dhcp.Packet) {
+	transactionID := getTransactionID(request)
+	clientMACAddress := request.CHAddr().String()
 	reply := newReply(request, dhcp.ACK, s.ServiceIP,
 		targetIP,
 		s.LeaseDuration,
 		s.dhcpOptions.SelectOrderOrAll(requestOptions[dhcp.OptionParameterRequestList]),
+	)
+
+	log.Infof("[TXN: %s] ACK message to client with MAC address %s (IP '%s', Lease %d).",
+		transactionID,
+		clientMACAddress,
+		targetIP.String(),
+		s.LeaseDuration,
 	)
 
 	// Configure host name from server name.
@@ -276,7 +271,7 @@ func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Op
 
 	if isIPXEClient(requestOptions) {
 		// This is an iPXE client; direct them to load the iPXE boot script.
-		log.Infof("[TXN: %s] Client with MAC address %s is an iPXE client; directing them to boot script '%s'.",
+		log.Infof("[TXN: %s] Client with MAC address %s is an iPXE client; boot script '%s'.",
 			transactionID,
 			request.CHAddr().String(),
 			s.IPXEBootScript,
@@ -285,7 +280,7 @@ func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Op
 		s.addIPXEBootScript(reply)
 	} else {
 		// This is a PXE client; direct them to load the standard PXE boot image.
-		log.Infof("[TXN: %s] Client with MAC address %s is a regular PXE (or non-PXE) client; directing them to iPXE boot image 'tftp://%s/%s'.",
+		log.Infof("[TXN: %s] Client with MAC address %s is a regular PXE (or non-PXE) client; iPXE boot image 'tftp://%s/%s'.",
 			transactionID,
 			request.CHAddr().String(),
 			s.ServiceIP,

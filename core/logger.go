@@ -8,7 +8,7 @@ import (
 )
 
 var format = logging.MustStringFormatter(
-	`%{color}%{time:2006-01-02T15:04:05.999Z07:00} %{level:.5s} %{module:.10s}%{color:reset} %{message}`,
+	`%{color}%{time:2006-01-02T15:04:05Z07:00} %{level:.5s} %{module:.10s}%{color:reset} %{message}`,
 )
 
 func init() {
@@ -21,11 +21,11 @@ func init() {
 	logging.SetBackend(backend2Formatter)
 }
 
-var log = logging.MustGetLogger("pxecore")
+var log = logging.MustGetLogger("pxesrv")
 
 type logger struct {
 }
 
 func (l logger) Log(record accesslog.LogRecord) {
-	log.Info(record.Method + " " + record.Uri)
+	log.Info("[HTTP] " + record.Method + " " + record.Uri)
 }

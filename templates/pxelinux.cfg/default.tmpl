@@ -1,0 +1,62 @@
+default {{.NextServer}}/isolinux/vesamenu.c32
+#prompt 1
+timeout 300
+
+display {{.NextServer}}/isolinux/boot.msg
+
+menu background {{.NextServer}}/isolinux/splash.jpg
+menu title Welcome to PXEServer {{.NextServer}}
+menu vshift 2
+menu rows 20
+menu margin 4
+#menu hidden
+menu helpmsgrow 25
+menu tabmsgrow 22
+menu color border 0 #ffffffff #00000000
+menu color sel 0 #ffffffff #00000000 none
+menu color title 0 #ffffffff #00000000 none
+menu color tabmsg 0 #ffffffff #00000000 none
+menu color unsel 0 #84b8ffff #00000000 none
+menu color hotsel 0 #84b8ffff #00000000 none
+menu color hotkey 0 #ffffffff #00000000 none
+
+
+label CentOS6
+  menu label Install CentOS 6 With Kickstart
+  kernel {{.NextServer}}/centos/6/isolinux/vmlinuz
+  append initrd={{.NextServer}}/centos/6/isolinux/initrd.img ks={{.NextServer}}/linux/ks/centos6.ks
+label CentOS7
+  menu label Install CentOS 7 With Kickstart
+  menu default
+  kernel {{.NextServer}}/centos/7/isolinux/vmlinuz
+  append initrd={{.NextServer}}/centos/7/isolinux/initrd.img ramdisk_size=300000 ks={{.NextServer}}/linux/ks/centos7.ks text
+label CentOS8
+  menu label Install CentOS 8 With Kickstart
+  kernel {{.NextServer}}/centos/8/isolinux/vmlinuz
+  append initrd={{.NextServer}}/centos/8/isolinux/initrd.img inst.repo={{.NextServer}}/centos/8 inst.ks={{.NextServer}}/linux/ks/centos8.ks text
+menu separator # insert an empty line
+label RHEL6
+  menu label RedHat Enterprise Linux 6 AutoInstall
+  kernel {{.NextServer}}/rhel/6/isolinux/vmlinuz
+  append initrd={{.NextServer}}/rhel/6/isolinux/initrd.img ks={{.NextServer}}/linux/ks/rhel6.ks
+label RHEL7
+  menu label RedHat Enterprise Linux 7 AutoInstall
+  kernel {{.NextServer}}/rhel/7/isolinux/vmlinuz
+  append initrd={{.NextServer}}/rhel/7/isolinux/initrd.img ramdisk_size=300000 ks={{.NextServer}}/linux/ks/rhel7.ks text
+label RHEL8
+  menu label RedHat Enterprise Linux 8 AutoInstall
+  kernel {{.NextServer}}/rhel/8/isolinux/vmlinuz
+  append initrd={{.NextServer}}/rhel/8/isolinux/initrd.img inst.repo={{.NextServer}}/rhel/8 inst.ks={{.NextServer}}/linux/ks/rhel8.ks text
+menu separator # insert an empty line
+label Ubuntu1804
+  menu label Ubuntu Linux 18.04.3 VM AutoInstall
+  kernel {{.NextServer}}/ubuntu/install/netboot/ubuntu-installer/amd64/Linux
+  append initrd={{.NextServer}}/ubuntu/install/netboot/ubuntu-installer/amd64/initrd.gz auto console-setup/ask_detect=false console-setup/layoutcode=us console-setup/modelcode=pc105 debconf/frontend=noninteractive debian-installer=en_US fb=false kbd-chooser/method=us keyboard-configuration/layout=USA keyboard-configuration/variant=USA locale=en_US netcfg/get_hostname=ubuntu-1804 netcfg/get_domain=sino.com noapic preseed/url={{.NextServer}}/linux/preseed/ubuntu-server.seed quiet ---
+label Debian10
+  menu label Debian Linux 10 AutoInstall
+  kernel {{.NextServer}}/debian/install.amd/netboot/debian-installer/amd64/Linux
+  append initrd={{.NextServer}}/debian/install.amd/netboot/debian-installer/amd64/initrd.gz auto console-setup/ask_detect=false console-setup/layoutcode=us console-keymaps-at/keymap=us debconf/frontend=noninteractive debian-installer=en_US fb=false kbd-chooser/method=us keyboard-configuration/xkb-keymap=us locale=en_US.UTF-8 netcfg/get_hostname=ubuntu-1804 netcfg/get_domain=sino.com noapic preseed/url={{.NextServer}}/linux/preseed/debian.seed quiet ---
+menu separator # insert an empty line
+label win7pe
+  menu label Boot From Win7 PE
+  initrd {{.NextServer}}/winpe/dostools/w7pe.iso

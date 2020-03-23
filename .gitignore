@@ -19,3 +19,4 @@
 !/netboot/rhel/*/*.gitkeep
 *.ks
 default
+menu.ipxe

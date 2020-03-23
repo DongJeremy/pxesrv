@@ -62,6 +62,7 @@ func (s *Service) Initialize(path string) error {
 	s.TFTPServerName = viper.GetString("global.ip_address")
 	s.PXEBootImage = viper.GetString("pxe.pxe_file")
 	s.IPXEBootScript = viper.GetString("pxe.ipxe_file")
+	s.EnableIPXE = viper.GetBool("pxe.enable_ipxe")
 	err = s.Prepare()
 	if err != nil {
 		return err
@@ -71,11 +72,7 @@ func (s *Service) Initialize(path string) error {
 
 // Prepare env
 func (s *Service) Prepare() error {
-	if err := s.LoadTemplates(); err != nil {
-		log.Errorf("error during template loading, error: %s", err)
-		return err
-	}
-	if err := s.RenderFile(); err != nil {
+	if err := s.LoadAndRenderTemplates(); err != nil {
 		log.Errorf("error during template rendering, error: %s", err)
 		return err
 	}
