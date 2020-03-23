@@ -14,10 +14,10 @@ The following are configs that can be passed to `pxesrv` when running from the c
 
 ```yaml
 # server config
-common:
-  export_ip: 192.168.1.190
-  #root_path: E:\ProgramData\workspace\pxesrv
-  root_path: /opt/pxesrv
+global:
+  ip_address: 192.168.1.61
+  #doc_root: E:\ProgramData\Go\workspace\pxesrv
+  doc_root: /usr/local/pxeserver/
 
 pxe:
   listen_ip: 0.0.0.0
@@ -27,11 +27,14 @@ pxe:
   tftp_root: netboot
   dhcp_port: 67
   start_ip: 192.168.1.201
-  lease_range: 10
+  end_ip: 192.168.1.220
   netmask: 255.255.255.0
   router: 192.168.1.1
   dns_server: 114.114.114.114
-  pxe_file: ipxelinux.0
+  #pxe_file: undionly.kpxe
+  pxe_file: ipxe.pxe
+  enable_ipxe: true 
+  ipxe_file: menu.ipxe
 
 ```
 
@@ -63,6 +66,12 @@ systemctl start pxesrv.service
 
 ```bash
 systemctl enable pxesrv.service
+```
+
+or use the following command in the console.
+
+```bash
+/usr/local/pxeserver/pxesrv -c /usr/local/pxeserver/pxe.yml
 ```
 
 ### Configure
