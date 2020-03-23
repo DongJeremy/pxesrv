@@ -7,7 +7,7 @@
 %global import_path     %{provider_prefix}
 
 Name:           pxesrv
-Version:        0.0.1
+Version:        1.0.0
 Release:        1%{?dist}
 Summary:        gonews Daily News Retrieval Platform
 
@@ -40,6 +40,8 @@ cp -a {netboot,templates} %{buildroot}/usr/local/pxeserver/
 mkdir -p $RPM_BUILD_ROOT%{_unitdir}
 install -m 0644 %{name}.service $RPM_BUILD_ROOT%{_unitdir}
 
+# delete all .gitkeep files.
+find %{buildroot}/usr/local/pxeserver/ -name .gitkeep -exec rm -fr {} \;
 
 %files
 %defattr(-,root,root)
