@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/op/go-logging"
 	"github.com/spf13/viper"
 )
 
@@ -28,6 +29,7 @@ type Service struct {
 	IPXEBootScript string // iPXE boot script (HTTP)
 	EnableIPXE     bool
 	errs           chan error
+	Logger         *logging.Logger //default log
 }
 
 // NewService creates new Service state.
@@ -63,6 +65,9 @@ func (s *Service) Initialize(path string) error {
 	s.PXEBootImage = viper.GetString("pxe.pxe_file")
 	s.IPXEBootScript = viper.GetString("pxe.ipxe_file")
 	s.EnableIPXE = viper.GetBool("pxe.enable_ipxe")
+	logFilePath := viper.GetString("global.log_file_path")
+	logFileName := viper.GetString("global.log_file_name")
+	s.Logger = initLogger(logFilePath, logFileName)
 	err = s.Prepare()
 	if err != nil {
 		return err
@@ -73,7 +78,7 @@ func (s *Service) Initialize(path string) error {
 // Prepare env
 func (s *Service) Prepare() error {
 	if err := s.LoadAndRenderTemplates(); err != nil {
-		log.Errorf("error during template rendering, error: %s", err)
+		s.Logger.Errorf("error during template rendering, error: %s", err)
 		return err
 	}
 	return nil
@@ -81,28 +86,28 @@ func (s *Service) Prepare() error {
 
 // Start the service.
 func (s *Service) Start() error {
-
+	s.Logger.Info("[PXES] starting pxe server...")
 	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.ListenIP, s.DHCPPort))
 	if err != nil {
-		log.Errorf("start DHCP failed, %s", err)
+		s.Logger.Errorf("start DHCP failed, %s", err)
 		return err
 	}
 
 	a, err := net.ResolveUDPAddr("udp4", fmt.Sprintf("%s:%s", s.ListenIP, s.TFTPPort))
 	if err != nil {
-		log.Errorf("resolveUDP failed, %s", err)
+		s.Logger.Errorf("resolveUDP failed, %s", err)
 		return err
 	}
 	tftp, err := net.ListenUDP("udp4", a)
 	if err != nil {
-		log.Errorf("start TFTP failed, %s", err)
+		s.Logger.Errorf("start TFTP failed, %s", err)
 		dhcp.Close()
 		return err
 	}
 
 	http, err := net.Listen("tcp4", fmt.Sprintf("%s:%s", s.ListenIP, s.HTTPPort))
 	if err != nil {
-		log.Errorf("start HTTP failed, %s", err)
+		s.Logger.Errorf("start HTTP failed, %s", err)
 		dhcp.Close()
 		tftp.Close()
 		return err

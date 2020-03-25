@@ -7,6 +7,7 @@ import (
 	"time"
 
 	dhcp "github.com/krolaw/dhcp4"
+	"github.com/op/go-logging"
 )
 
 func (s *Service) serveDHCP(conn dhcp.ServeConn) error {
@@ -21,6 +22,7 @@ func (s *Service) serveDHCP(conn dhcp.ServeConn) error {
 		stateLock:          &sync.Mutex{},
 		PXEBootImage:       s.PXEBootImage,
 		IPXEBootScript:     ipxeBootScript,
+		log:                s.Logger,
 		dhcpOptions: dhcp.Options{
 			dhcp.OptionSubnetMask:       net.ParseIP(s.NetMask).To4(),
 			dhcp.OptionRouter:           []byte(s.Router),
@@ -28,10 +30,10 @@ func (s *Service) serveDHCP(conn dhcp.ServeConn) error {
 			dhcp.OptionTFTPServerName:   []byte(s.TFTPServerName), // tftp_files server address
 		},
 	}
-	log.Infof("[DHCP] starting dhcp server on port %s(UDP)", s.DHCPPort)
+	s.Logger.Infof("[DHCP] starting dhcp server on port %s(UDP)", s.DHCPPort)
 
 	if err := dhcp.Serve(conn, dhcpService); err != nil {
-		log.Errorf("DHCP server shut down: %s", err)
+		s.Logger.Errorf("DHCP server shut down: %s", err)
 		return err
 	}
 	return nil
@@ -51,6 +53,7 @@ type DHCPService struct {
 	dhcpOptions        dhcp.Options
 	leasesByMACAddress map[string]*RecordLease
 	stateLock          *sync.Mutex
+	log                *logging.Logger //default log
 }
 
 // ServeDHCP handles an incoming DHCP request.
@@ -65,7 +68,7 @@ func (s *DHCPService) ServeDHCP(request dhcp.Packet, msgType dhcp.MessageType, r
 	case dhcp.Release:
 		response = s.handleRelease(request, requestOptions)
 	default:
-		log.Infof("[TXN: %s] Ignoring unhandled DHCP message type (%s).",
+		s.log.Infof("[TXN: %s] Ignoring unhandled DHCP message type (%s).",
 			getTransactionID(request),
 			msgType.String(),
 		)
@@ -85,7 +88,7 @@ func (s *DHCPService) handleDiscover(request dhcp.Packet, requestOptions dhcp.Op
 	transactionID := getTransactionID(request)
 	clientMACAddress := request.CHAddr().String()
 
-	log.Infof("[TXN: %s] Discover message from client with MAC address %s (IP '%s').",
+	s.log.Infof("[TXN: %s] Discover message from client with MAC address %s (IP '%s').",
 		transactionID,
 		clientMACAddress,
 		request.CIAddr().String(),
@@ -99,7 +102,7 @@ func (s *DHCPService) handleDiscover(request dhcp.Packet, requestOptions dhcp.Op
 	} else {
 		newRecordLease, err := s.createIP(clientMACAddress, s.IPRangeStart, s.IPRangeEnd)
 		if err != nil {
-			log.Infof("[TXN: %s] MAC address %s could not get a new available IP address (no reply will be sent).",
+			s.log.Infof("[TXN: %s] MAC address %s could not get a new available IP address (no reply will be sent).",
 				transactionID,
 				clientMACAddress,
 			)
@@ -122,7 +125,7 @@ func (s *DHCPService) replyOffer(request dhcp.Packet, targetIP net.IP, requestOp
 		s.dhcpOptions.SelectOrderOrAll(requestOptions[dhcp.OptionParameterRequestList]),
 	)
 
-	log.Infof("[TXN: %s] Offer message to client with MAC address %s (IP '%s').",
+	s.log.Infof("[TXN: %s] Offer message to client with MAC address %s (IP '%s').",
 		transactionID,
 		clientMACAddress,
 		targetIP.String(),
@@ -167,7 +170,7 @@ func (s *DHCPService) handleRequest(request dhcp.Packet, requestOptions dhcp.Opt
 	transactionID := getTransactionID(request)
 	clientMACAddress := request.CHAddr().String()
 
-	log.Infof("[TXN: %s] Request message from client with MAC address %s (IP '%s').",
+	s.log.Infof("[TXN: %s] Request message from client with MAC address %s (IP '%s').",
 		transactionID,
 		clientMACAddress,
 		request.CIAddr().String(),
@@ -177,7 +180,7 @@ func (s *DHCPService) handleRequest(request dhcp.Packet, requestOptions dhcp.Opt
 	existingLease, ok := s.leasesByMACAddress[clientMACAddress]
 	if ok {
 		if !existingLease.IsExpired() {
-			log.Infof("[TXN: %s] Renew lease on IPv4 address %s for server %s and send ACK reply.",
+			s.log.Infof("[TXN: %s] Renew lease on IPv4 address %s for server %s and send ACK reply.",
 				transactionID,
 				existingLease.IPAddress.String(),
 				clientMACAddress,
@@ -189,7 +192,7 @@ func (s *DHCPService) handleRequest(request dhcp.Packet, requestOptions dhcp.Opt
 		}
 		// New lease
 		targetIP := existingLease.IPAddress
-		log.Infof("[TXN: %s] Create lease on IPv4 address %s for server (MAC address %s) and send ACK reply.",
+		s.log.Infof("[TXN: %s] Create lease on IPv4 address %s for server (MAC address %s) and send ACK reply.",
 			transactionID,
 			targetIP.String(),
 			clientMACAddress,
@@ -212,7 +215,7 @@ func (s *DHCPService) replyACK(request dhcp.Packet, targetIP net.IP, requestOpti
 		s.dhcpOptions.SelectOrderOrAll(requestOptions[dhcp.OptionParameterRequestList]),
 	)
 
-	log.Infof("[TXN: %s] ACK message to client with MAC address %s (IP '%s', Lease %d).",
+	s.log.Infof("[TXN: %s] ACK message to client with MAC address %s (IP '%s', Lease %d).",
 		transactionID,
 		clientMACAddress,
 		targetIP.String(),
@@ -240,7 +243,7 @@ func (s *DHCPService) handleRelease(request dhcp.Packet, requestOptions dhcp.Opt
 	transactionID := getTransactionID(request)
 	clientMACAddress := request.CHAddr().String()
 
-	log.Infof("[TXN: %s] Release message from client with MAC address %s (IP '%s').",
+	s.log.Infof("[TXN: %s] Release message from client with MAC address %s (IP '%s').",
 		transactionID,
 		clientMACAddress,
 		request.CIAddr().String(),
@@ -248,7 +251,7 @@ func (s *DHCPService) handleRelease(request dhcp.Packet, requestOptions dhcp.Opt
 
 	existingLease, ok := s.leasesByMACAddress[clientMACAddress]
 	if ok && !existingLease.IsExpired() {
-		log.Infof("[TXN: %s] Server '%s' requested termination of lease on IPv4 address %s.",
+		s.log.Infof("[TXN: %s] Server '%s' requested termination of lease on IPv4 address %s.",
 			transactionID,
 			clientMACAddress,
 			existingLease.IPAddress.String(),
@@ -256,7 +259,7 @@ func (s *DHCPService) handleRelease(request dhcp.Packet, requestOptions dhcp.Opt
 
 		s.expireLease(existingLease)
 	} else {
-		log.Infof("[TXN: %s] Server '%s' requested requested termination of expired or non-existent lease; request ignored.",
+		s.log.Infof("[TXN: %s] Server '%s' requested requested termination of expired or non-existent lease; request ignored.",
 			transactionID,
 			clientMACAddress,
 		)
@@ -271,7 +274,7 @@ func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Op
 
 	if isIPXEClient(requestOptions) {
 		// This is an iPXE client; direct them to load the iPXE boot script.
-		log.Infof("[TXN: %s] Client with MAC address %s is an iPXE client; boot script '%s'.",
+		s.log.Infof("[TXN: %s] Client with MAC address %s is an iPXE client; boot script '%s'.",
 			transactionID,
 			request.CHAddr().String(),
 			s.IPXEBootScript,
@@ -280,7 +283,7 @@ func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Op
 		s.addIPXEBootScript(reply)
 	} else {
 		// This is a PXE client; direct them to load the standard PXE boot image.
-		log.Infof("[TXN: %s] Client with MAC address %s is a regular PXE; iPXE boot image 'tftp://%s/%s'.",
+		s.log.Infof("[TXN: %s] Client with MAC address %s is a regular PXE; iPXE boot image 'tftp://%s/%s'.",
 			transactionID,
 			request.CHAddr().String(),
 			s.ServiceIP,

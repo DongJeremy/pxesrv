@@ -1,8 +1,11 @@
 # server config
 global:
   ip_address: 192.168.1.61
-  #doc_root: E:\ProgramData\Go\workspace\pxesrv
+  #doc_root: E:\ProgramData\workspace\pxesrv
   doc_root: /usr/local/pxeserver/
+  log_file_path: /var/log/
+  #log_file_path: E:/tmp/logs
+  log_file_name: pxesrv.log
 
 pxe:
   listen_ip: 0.0.0.0

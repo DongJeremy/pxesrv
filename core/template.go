@@ -40,7 +40,7 @@ func (s *Service) LoadAndRenderTemplates() (err error) {
 	targetRoot := filepath.Join(s.DocRoot, targetPath)
 	exist, _ := PathExists(templateRoot)
 	if !exist {
-		log.Errorf("template folder %s is not exist", templateRoot)
+		s.Logger.Errorf("template folder %s is not exist", templateRoot)
 		return err
 	}
 	filepath.Walk(templateRoot, func(path string, info os.FileInfo, err error) error {
@@ -59,7 +59,7 @@ func (s *Service) LoadAndRenderTemplates() (err error) {
 
 		f, err := os.OpenFile(destFile, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
-			log.Errorf("error during template rendering In template %s", destFile)
+			s.Logger.Errorf("error during template rendering In template %s", destFile)
 			return err
 		}
 		defer f.Close()
@@ -71,6 +71,6 @@ func (s *Service) LoadAndRenderTemplates() (err error) {
 
 		return nil
 	})
-	log.Info("[TMPL] templates rendering successful")
+	s.Logger.Info("[TMPL] templates rendering successful")
 	return nil
 }

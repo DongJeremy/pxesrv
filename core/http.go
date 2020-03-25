@@ -13,9 +13,9 @@ func (s *Service) serveHTTP(l net.Listener) error {
 	listen := net.JoinHostPort(s.ListenIP, s.HTTPPort)
 	rootPath := filepath.Join(s.DocRoot, s.HTTPRoot)
 
-	accessLogger := logger{}
+	accessLogger := logger{Logger: s.Logger}
 	http.Handle("/", accesslog.NewLoggingHandler(http.FileServer(http.Dir(rootPath)), accessLogger))
-	log.Infof("[HTTP] starting http server %s(TCP) and handle on path: %s", listen, rootPath)
+	s.Logger.Infof("[HTTP] starting http server %s(TCP) and handle on path: %s", listen, rootPath)
 
 	httpServer := &http.Server{
 		Addr:           s.HTTPRoot,      // 监听的地址和端口
@@ -26,7 +26,7 @@ func (s *Service) serveHTTP(l net.Listener) error {
 		TLSConfig:      nil,             // 配置TLS
 	}
 	if err := httpServer.Serve(l); err != nil {
-		log.Errorf("HTTP server shut down: %s", err)
+		s.Logger.Errorf("HTTP server shut down: %s", err)
 		return err
 	}
 	return nil
