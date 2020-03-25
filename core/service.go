@@ -68,6 +68,7 @@ func (s *Service) Initialize(path string) error {
 	logFilePath := viper.GetString("global.log_file_path")
 	logFileName := viper.GetString("global.log_file_name")
 	s.Logger = initLogger(logFilePath, logFileName)
+	s.Logger.Info("[PXES] starting pxesrv daemon...")
 	err = s.Prepare()
 	if err != nil {
 		return err
@@ -86,7 +87,6 @@ func (s *Service) Prepare() error {
 
 // Start the service.
 func (s *Service) Start() error {
-	s.Logger.Info("[PXES] starting pxe server...")
 	dhcp, err := net.ListenPacket("udp4", fmt.Sprintf("%s:%s", s.ListenIP, s.DHCPPort))
 	if err != nil {
 		s.Logger.Errorf("start DHCP failed, %s", err)
