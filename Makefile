@@ -15,12 +15,15 @@ fmt: clean
 
 linux: fmt
 	${BUILD_LINUX} go build ${LDFLAGS} -a -o ${OUTPUT}/linux/${NAME} ${SOURCE}
+	upx --brute ${OUTPUT}/linux/${NAME}
 
 window: fmt
 	${BUILD_WINDOWS} go build ${WLDFLAGS} -a -o ${OUTPUT}/window/${NAME}.exe .
+	upx --brute ${OUTPUT}/window/${NAME}.exe
 
 mac: fmt
 	${BUILD_DARWIN} go build ${LDFLAGS} -a -o ${OUTPUT}/mac/${NAME} ${SOURCE}
+	upx --brute ${OUTPUT}/mac/${NAME}
 
 clean:
 	rm -rf output/*
