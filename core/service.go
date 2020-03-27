@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"net"
+	"runtime"
 
 	"github.com/op/go-logging"
 	"github.com/spf13/viper"
@@ -49,7 +50,17 @@ func (s *Service) Initialize(path string) error {
 		return err
 	}
 	s.ServiceIP = viper.GetString("global.ip_address")
-	s.DocRoot = viper.GetString("global.doc_root")
+	var logFilePath string
+	if runtime.GOOS == "linux" {
+		s.DocRoot = viper.GetString("global.linux.doc_root")
+		logFilePath = viper.GetString("global.linux.log_file_path")
+	} else if runtime.GOOS == "windows" {
+		s.DocRoot = viper.GetString("global.windows.doc_root")
+		logFilePath = viper.GetString("global.windows.log_file_path")
+	} else if runtime.GOOS == "darwin" {
+		s.DocRoot = viper.GetString("global.darwin.doc_root")
+		logFilePath = viper.GetString("global.darwin.log_file_path")
+	}
 	s.ListenIP = viper.GetString("pxe.listen_ip")
 	s.HTTPPort = viper.GetString("pxe.http_port")
 	s.HTTPRoot = viper.GetString("pxe.http_root")
@@ -65,7 +76,6 @@ func (s *Service) Initialize(path string) error {
 	s.PXEBootImage = viper.GetString("pxe.pxe_file")
 	s.IPXEBootScript = viper.GetString("pxe.ipxe_file")
 	s.EnableIPXE = viper.GetBool("pxe.enable_ipxe")
-	logFilePath := viper.GetString("global.log_file_path")
 	logFileName := viper.GetString("global.log_file_name")
 	s.Logger = initLogger(logFilePath, logFileName)
 	s.Logger.Info("[PXES] starting pxesrv daemon...")
