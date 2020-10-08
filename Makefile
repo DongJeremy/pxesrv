@@ -2,7 +2,7 @@ NAME=pxesrv
 VERSION=1.0.0
 SOURCE=main.go
 LDFLAGS=-ldflags "-s -w"
-WLDFLAGS=-ldflags "-s -w -H windowsgui"
+WLDFLAGS=-ldflags "-s -w"
 BUILD_LINUX=CGO_ENABLED=0 GOARCH=amd64 GOOS=linux
 BUILD_WINDOWS=CGO_ENABLED=0 GOARCH=amd64 GOOS=windows
 BUILD_DARWIN=CGO_ENABLED=0 GOARCH=amd64 GOOS=darwin

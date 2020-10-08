@@ -15,6 +15,8 @@
 # vendor/
 /netboot/centos
 /netboot/rhel
+/output/*/*
+/output/*.zip
 !/netboot/centos/*/*.gitkeep
 !/netboot/rhel/*/*.gitkeep
 *.ks
