@@ -1,0 +1,101 @@
+diff -Nur old/core/dhcp.go new/core/dhcp.go
+--- old/core/dhcp.go	2020-11-02 09:35:27.011519966 -0800
++++ new/core/dhcp.go	2020-11-02 09:39:23.622176621 -0800
+@@ -21,12 +21,13 @@
+ 		EnableIPXE:         s.EnableIPXE,
+ 		stateLock:          &sync.Mutex{},
+ 		PXEBootImage:       s.PXEBootImage,
++		TFTPServerName:     s.TFTPServerName,
+ 		IPXEBootScript:     ipxeBootScript,
+ 		log:                s.Logger,
+ 		dhcpOptions: dhcp.Options{
+ 			dhcp.OptionSubnetMask:       net.ParseIP(s.NetMask).To4(),
+-			dhcp.OptionRouter:           []byte(s.Router),
+-			dhcp.OptionDomainNameServer: []byte(s.DNSServer),      // Presuming Server is also your DNS server
++			dhcp.OptionRouter:           net.ParseIP(s.Router).To4(),
++			dhcp.OptionDomainNameServer: net.ParseIP(s.DNSServer).To4(),      // Presuming Server is also your DNS server
+ 			dhcp.OptionTFTPServerName:   []byte(s.TFTPServerName), // tftp_files server address
+ 		},
+ 	}
+@@ -138,7 +139,7 @@
+ 
+ 	// Add DHCP options for PXE / iPXE, if required.
+ 	if s.EnableIPXE && isPXEClient(requestOptions) {
+-		s.addIPXEOptions(request, requestOptions, reply)
++		s.addIPXEOptions(request, requestOptions, &reply)
+ 	}
+ 
+ 	// Set the DHCP server identity (i.e. DHCP server address).
+@@ -229,7 +230,7 @@
+ 
+ 	// Add DHCP options for PXE / iPXE, if required.
+ 	if s.EnableIPXE && isPXEClient(requestOptions) {
+-		s.addIPXEOptions(request, requestOptions, reply)
++		s.addIPXEOptions(request, requestOptions, &reply)
+ 	}
+ 
+ 	// Set the DHCP server identity (i.e. DHCP server address).
+@@ -269,7 +270,7 @@
+ }
+ 
+ // Add options for PXE / iPXE to a DHCP response.
+-func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Options, reply dhcp.Packet) {
++func (s *DHCPService) addIPXEOptions(request dhcp.Packet, requestOptions dhcp.Options, reply *dhcp.Packet) {
+ 	transactionID := getTransactionID(request)
+ 
+ 	if isIPXEClient(requestOptions) {
+@@ -295,7 +296,7 @@
+ }
+ 
+ // Add an IPXE boot script URL to a DHCP response.
+-func (s *DHCPService) addIPXEBootScript(response dhcp.Packet) {
++func (s *DHCPService) addIPXEBootScript(response *dhcp.Packet) {
+ 	ipxeBootScript := s.IPXEBootScript
+ 
+ 	addBootFile(response, ipxeBootScript)
+@@ -303,7 +304,7 @@
+ }
+ 
+ // Add a PXE boot image (and TFTP server) to a DHCP response.
+-func (s *DHCPService) addPXEBootImage(response dhcp.Packet) {
++func (s *DHCPService) addPXEBootImage(response *dhcp.Packet) {
+ 	pxeBootImage := s.PXEBootImage
+ 
+ 	addBootFile(response, pxeBootImage)
+diff -Nur old/core/dhcp_helper.go new/core/dhcp_helper.go
+--- old/core/dhcp_helper.go	2020-11-02 09:35:27.011519966 -0800
++++ new/core/dhcp_helper.go	2020-11-02 09:40:22.671232540 -0800
+@@ -174,7 +174,7 @@
+ 	reply.SetGIAddr(request.GIAddr())
+ 	reply.SetCHAddr(request.CHAddr())
+ 	reply.AddOption(dhcp.OptionDHCPMessageType, []byte{byte(messageType)})
+-	reply.AddOption(dhcp.OptionServerIdentifier, []byte(serverIP))
++	reply.AddOption(dhcp.OptionServerIdentifier, serverIP.To4())
+ 	if leaseDuration > 0 {
+ 		reply.AddOption(dhcp.OptionIPAddressLeaseTime, dhcp.OptionsLeaseTime(leaseDuration))
+ 	}
+@@ -188,21 +188,21 @@
+ }
+ 
+ // Add a BOOTP-style boot file path to a DHCP response.
+-func addBootFile(response dhcp.Packet, bootFile string) {
++func addBootFile(response *dhcp.Packet, bootFile string) {
+ 	response.SetFile(
+ 		[]byte(bootFile),
+ 	)
+ }
+ 
+ // Add a DHCP-style boot file path option to a DHCP response.
+-func addBootFileOption(response dhcp.Packet, bootFile string) {
++func addBootFileOption(response *dhcp.Packet, bootFile string) {
+ 	response.AddOption(dhcp.OptionBootFileName,
+ 		[]byte(bootFile),
+ 	)
+ }
+ 
+ // Add DHCP TFTPServerName and BootFileName options (i.e. option 66, option 67) to a DHCP response.
+-func addTFTPBootFile(response dhcp.Packet, tftpServerName string, bootFile string) {
++func addTFTPBootFile(response *dhcp.Packet, tftpServerName string, bootFile string) {
+ 	addBootFileOption(response, bootFile)
+ 
+ 	response.AddOption(dhcp.OptionTFTPServerName,
